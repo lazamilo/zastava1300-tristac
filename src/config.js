@@ -79,8 +79,17 @@ export const MEDIA_ALT = {
   detail: 'Detalj prednjeg dela: dupli okrugli farovi, hromirana maska i branik'
 };
 
-export const CREDITS =
-  'Vizuali automobila su kreirani za TRISTAĆ. Rezervna fotografija: Wikimedia Commons, „Zastava 1300 Luxe“, CC BY-SA 4.0.';
+// Attribution required by the fallback photograph's licence; shown only once it is on screen.
+export const FALLBACK_CREDIT = 'Fotografija: Wikimedia Commons, „Zastava 1300 Luxe“, CC BY-SA 4.0.';
+
+let fallbackShown = false;
+const fallbackListeners = new Set();
+
+// Calls back as soon as the fallback photograph is shown anywhere (immediately if it already is).
+export function onFallback(callback) {
+  if (fallbackShown) callback();
+  else fallbackListeners.add(callback);
+}
 
 // Resolves a media key to a URL, falling back to the authentic reference photograph.
 export function mediaUrl(key) {
@@ -97,7 +106,14 @@ export function loadImage(img, key, { alt = true } = {}) {
       img.removeEventListener('error', onError);
       resolve(ok);
     };
-    const onLoad = () => done(!fellBack);
+    const onLoad = () => {
+      if (fellBack && !fallbackShown) {
+        fallbackShown = true;
+        fallbackListeners.forEach((cb) => cb());
+        fallbackListeners.clear();
+      }
+      done(!fellBack);
+    };
     const onError = () => {
       if (!fellBack && img.src !== FALLBACK_IMAGE) {
         fellBack = true;

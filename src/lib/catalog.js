@@ -1,7 +1,7 @@
 import { gsap } from './gsap.js';
 import { blur } from './vars.js';
 import { lockScroll } from './scroll.js';
-import { loadImage, MEDIA_ALT, CREDITS } from '../config.js';
+import { loadImage, MEDIA_ALT, FALLBACK_CREDIT, onFallback } from '../config.js';
 
 const PLACEHOLDER = 'Na upit';
 
@@ -247,7 +247,13 @@ export function initCatalog({ catalog, widgets, row, vehicle }) {
     });
   });
   const credits = document.querySelector('[data-credits]');
-  if (credits) credits.textContent = CREDITS;
+  if (credits) {
+    credits.hidden = true;
+    onFallback(() => {
+      credits.textContent = FALLBACK_CREDIT;
+      credits.hidden = false;
+    });
+  }
   const year = document.querySelector('[data-year]');
   if (year) year.textContent = String(new Date().getFullYear());
 
