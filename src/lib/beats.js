@@ -42,9 +42,10 @@ export function computeBeats(dom) {
   };
   slotRect.h = slotRect.w * 9 / 16;
 
-  // Cover rect: the 16:9 plate scaled to fill the viewport.
-  const coverW = Math.max(vw, vh * 16 / 9);
-  const cover = { x: (vw - coverW) / 2, y: (vh - coverW * 9 / 16) / 2, w: coverW, h: coverW * 9 / 16 };
+  // Cover rect: the 16:9 plate scaled to fill the viewport at its tallest (toolbars collapsed).
+  const vhCover = viewport.cover || vh;
+  const coverW = Math.max(vw, vhCover * 16 / 9);
+  const cover = { x: (vw - coverW) / 2, y: (vhCover - coverW * 9 / 16) / 2, w: coverW, h: coverW * 9 / 16 };
 
   // About: the plate tracks the slot, then glides toward the lower centre of the catalog.
   const glideStart = clamp(heroEnd + vh * (mobile ? 0.55 : 0.4), heroEnd + 1, catTop - vh * 0.35);
@@ -76,6 +77,7 @@ export function computeBeats(dom) {
   return {
     vw,
     vh,
+    vhCover,
     mobile,
     lite: env.lite,
     hero: [0, heroEnd],

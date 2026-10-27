@@ -234,10 +234,10 @@
     padding: calc(var(--header-h) + 24px) var(--gutter) var(--gutter);
     will-change: opacity, filter, transform;
   }
-  .hero__inner::before {
-    /* Legibility scrim over the footage, not a substitute background */
-    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-    background: linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.12) 30%, rgba(0,0,0,0) 50%, rgba(0,0,0,.38) 100%);
+  .hero, .scene {
+    /* Legibility scrim for the hero copy. It is painted on the plate (see .plate__inner::after)
+       so it moves and fades with the footage and never shows an edge while scrolling. */
+    --hero-scrim: linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.12) 30%, rgba(0,0,0,0) 50%, rgba(0,0,0,.38) 100%);
   }
   .hero__top {
     grid-column: 1; grid-row: 1;
@@ -268,8 +268,8 @@
     .hero__hint { display: none; }
     .hero__line--end { align-self: flex-start; }
     /* The copy sits low on mobile, so the scrim weights the bottom instead */
-    .hero__inner::before {
-      background: linear-gradient(180deg, rgba(0,0,0,.32) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 48%, rgba(0,0,0,.5) 78%, rgba(0,0,0,.6) 100%);
+    .hero, .scene {
+      --hero-scrim: linear-gradient(180deg, rgba(0,0,0,.32) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 48%, rgba(0,0,0,.5) 78%, rgba(0,0,0,.6) 100%);
     }
   }
 
@@ -485,8 +485,9 @@
 
   .scene {
     position: sticky; top: 0; z-index: 0;
-    height: var(--vh);
-    margin-bottom: calc(var(--vh) * -1);
+    /* Tallest viewport height, so the media reaches the bottom when mobile toolbars collapse */
+    height: var(--vh-cover, var(--vh));
+    margin-bottom: calc(var(--vh-cover, var(--vh)) * -1);
     overflow: hidden;
     pointer-events: none;
     contain: layout paint;
@@ -530,6 +531,12 @@
     content: ''; position: absolute; inset: 0;
     background: #2a241e;
     opacity: calc(1 - var(--cut));
+  }
+  .plate__inner::after {
+    /* Hero legibility scrim, fading out as the plate leaves the hero (--scrim from media.js) */
+    content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: var(--hero-scrim);
+    opacity: var(--scrim, 1);
   }
   .plate__poster, .plate__video, .plate__frames, .plate__still, .plate__cut {
     position: absolute; inset: 0; width: 100%; height: 100%;
@@ -578,6 +585,10 @@
     position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover;
   }
   html.is-reduced .hero { background: #2a241e; }
+  html.is-reduced .hero__inner::before {
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: var(--hero-scrim);
+  }
   html.is-reduced .about__slot { overflow: hidden; }
   html.is-reduced .about__slot img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-plate); }
   html.is-reduced .catalog { height: auto; }

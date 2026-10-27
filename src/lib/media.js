@@ -35,7 +35,7 @@ export function initMedia(elements) {
 function computeGeometry(b) {
   const { cover, slot, glide, present } = b.rects;
   const vw = b.vw;
-  const vh = b.vh;
+  const vh = b.vhCover || b.vh;
   const trackDist = b.track[1] - b.track[0];
 
   const heroS = cover.w / slot.w;
@@ -90,6 +90,8 @@ export function render() {
   setVar(el, '--pres-s', ps);
 
   setVar(el, '--cut', state.cut);
+  // The hero scrim on the plate eases out as the plate shrinks toward the about slot.
+  setVar(el, '--scrim', Math.min(1, state.hero * 1.25));
   // Lite devices use a fixed radius and no clip-path (see style.css), so nothing else to write.
   if (geo.lite) return;
 

@@ -36,13 +36,31 @@ export const env = {
 // Blur as tween props, or nothing on lite devices where animated filters cause jank.
 export const blur = (n) => (env.lite ? {} : { filter: `blur(${n}px)` });
 
-export const viewport = { w: window.innerWidth, h: window.innerHeight };
+export const viewport = { w: window.innerWidth, h: window.innerHeight, cover: window.innerHeight };
+
+let probe = null;
+
+// Height of the viewport with the mobile browser toolbars collapsed (100lvh); equals the
+// current height on desktop or where lvh is unsupported.
+function largeViewportHeight() {
+  if (!probe) {
+    probe = document.createElement('div');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100vh;height:100lvh;visibility:hidden;pointer-events:none;';
+    document.body.append(probe);
+  }
+  return probe.offsetHeight || window.innerHeight;
+}
 
 // Captures the viewport once per refresh so scroll handlers never read layout.
 export function measureViewport() {
   viewport.w = document.documentElement.clientWidth || window.innerWidth;
   viewport.h = window.innerHeight;
+  // Full-bleed media is sized to the tallest the viewport gets, so no edge shows when the
+  // mobile toolbars collapse during scrolling.
+  viewport.cover = Math.max(viewport.h, largeViewportHeight());
   setVar(document.documentElement, '--vh-px', `${viewport.h}px`);
+  setVar(document.documentElement, '--vh-cover', `${viewport.cover}px`);
   return viewport;
 }
 
