@@ -1,4 +1,5 @@
 import { gsap } from './gsap.js';
+import { blur } from './vars.js';
 
 /**
  * Hero entrance (time-based, expo-out) and exit (scrubbed by scroll).
@@ -16,11 +17,11 @@ export function initHero(hero, { headerIntro, video }) {
     const tl = gsap.timeline({ delay: 0.1 });
     tl.add(headerIntro(), 0);
     tl.fromTo(lines,
-      { autoAlpha: 0, yPercent: 18, filter: 'blur(18px)' },
-      { autoAlpha: 1, yPercent: 0, filter: 'blur(0px)', stagger: 0.14, duration: 1.8, clearProps: 'filter' }, 0.45);
+      { autoAlpha: 0, yPercent: 18, ...blur(18) },
+      { autoAlpha: 1, yPercent: 0, ...blur(0), stagger: 0.14, duration: 1.8, clearProps: 'filter' }, 0.45);
     tl.fromTo([pill, desc],
-      { autoAlpha: 0, y: 18, filter: 'blur(8px)' },
-      { autoAlpha: 1, y: 0, filter: 'blur(0px)', stagger: 0.1, duration: 1.4, clearProps: 'filter' }, 0.9);
+      { autoAlpha: 0, y: 18, ...blur(8) },
+      { autoAlpha: 1, y: 0, ...blur(0), stagger: 0.1, duration: 1.4, clearProps: 'filter' }, 0.9);
     if (hint) tl.fromTo(hint, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 1.2 }, 1.2);
     return tl;
   };
@@ -28,10 +29,10 @@ export function initHero(hero, { headerIntro, video }) {
   // Scroll exit: typography blurs and fades, the footage is scrubbed with the plate.
   const build = (beats) => {
     gsap.fromTo(inner,
-      { autoAlpha: 1, filter: 'blur(0px)', y: 0 },
+      { autoAlpha: 1, ...blur(0), y: 0 },
       {
         autoAlpha: 0,
-        filter: 'blur(14px)',
+        ...blur(14),
         y: () => -beats.vh * 0.06,
         ease: 'none',
         immediateRender: false,

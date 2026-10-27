@@ -1,4 +1,5 @@
 import { gsap } from './gsap.js';
+import { blur } from './vars.js';
 import { lockScroll } from './scroll.js';
 import { loadImage, MEDIA_ALT, CREDITS } from '../config.js';
 
@@ -71,8 +72,8 @@ function bindDialog(dialog) {
     dialog.showModal();
     lockScroll(true);
     gsap.fromTo(dialog.querySelector('.dialog__panel'),
-      { autoAlpha: 0, y: 24, filter: 'blur(6px)' },
-      { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.9, clearProps: 'filter' });
+      { autoAlpha: 0, y: 24, ...blur(6) },
+      { autoAlpha: 1, y: 0, ...blur(0), duration: 0.9, clearProps: 'filter' });
   };
   const close = () => {
     if (dialog.open) dialog.close();
@@ -264,8 +265,8 @@ export function initCatalog({ catalog, widgets, row, vehicle }) {
         onRefresh: (self) => setInert(self.progress < 0.5)
       }
     }).fromTo(cards,
-      { yPercent: 70, autoAlpha: 0, filter: 'blur(8px)' },
-      { yPercent: 0, autoAlpha: 1, filter: 'blur(0px)', ease: 'none', stagger: 0.18, duration: 0.6 });
+      { yPercent: 70, autoAlpha: 0, ...blur(8) },
+      { yPercent: 0, autoAlpha: 1, ...blur(0), ease: 'none', stagger: 0.18, duration: 0.6 });
   };
 
   const unlock = () => setInert(false);

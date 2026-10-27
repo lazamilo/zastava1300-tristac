@@ -77,6 +77,7 @@ export function computeBeats(dom) {
     vw,
     vh,
     mobile,
+    lite: env.lite,
     hero: [0, heroEnd],
     heroText: [0, heroEnd * 0.55],
     polFlip: heroEnd * 0.62,

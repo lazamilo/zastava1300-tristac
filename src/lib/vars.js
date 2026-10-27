@@ -12,8 +12,15 @@ export const env = {
   },
   get touch() {
     return window.matchMedia('(pointer: coarse)').matches;
+  },
+  // Phones and tablets: skip effects that repaint large layers on every scroll frame.
+  get lite() {
+    return this.mobile || this.touch;
   }
 };
+
+// Blur as tween props, or nothing on lite devices where animated filters cause jank.
+export const blur = (n) => (env.lite ? {} : { filter: `blur(${n}px)` });
 
 export const viewport = { w: window.innerWidth, h: window.innerHeight };
 
@@ -30,6 +37,7 @@ export function applyEnvClasses() {
   const root = document.documentElement;
   root.classList.toggle('is-reduced', env.reduced);
   root.classList.toggle('is-mobile', env.mobile);
+  root.classList.toggle('is-lite', env.lite);
   root.classList.toggle('is-motion', !env.reduced);
 }
 

@@ -1,4 +1,5 @@
 import { gsap } from './gsap.js';
+import { blur } from './vars.js';
 import { splitLines } from './split.js';
 
 /**
@@ -34,8 +35,8 @@ export function initAbout(about) {
     });
 
     // Scene transitions out with subtle blur.
-    gsap.fromTo(copy, { filter: 'blur(0px)', autoAlpha: 1 }, {
-      filter: 'blur(10px)',
+    gsap.fromTo(copy, { ...blur(0), autoAlpha: 1 }, {
+      ...blur(10),
       autoAlpha: 0,
       ease: 'none',
       immediateRender: false,

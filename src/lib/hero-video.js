@@ -1,4 +1,5 @@
 import { MEDIA } from '../config.js';
+import { env } from './vars.js';
 
 /**
  * Scroll-scrubbed hero footage with coalesced seeks: while one seek is in flight, only the
@@ -15,7 +16,7 @@ export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
   };
   if (!video) return api;
 
-  const src = MEDIA.video;
+  const src = (env.lite && MEDIA.videoMobile) || MEDIA.video;
   if (!src || !video.canPlayType('video/mp4')) {
     plate?.classList.add('is-video-off');
     video.remove();

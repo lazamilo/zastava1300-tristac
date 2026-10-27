@@ -132,8 +132,8 @@ export function buildMedia(b) {
   gsap.fromTo(state, { cat: 0 }, scrub(b.glide, { cat: 1, immediateRender: false }));
   gsap.fromTo(state, { cut: 0 }, scrub(b.dissolve, { cut: 1, immediateRender: false }));
   gsap.fromTo(state, { pres: 0 }, scrub(b.present, { pres: 1, immediateRender: false }));
-  // A soft blur pulse while the plate leaves the about section.
-  gsap.timeline(scrub(b.glide, {}))
+  // A soft blur pulse while the plate leaves the about section (skipped on lite devices).
+  if (!b.lite) gsap.timeline(scrub(b.glide, {}))
     .fromTo(state, { blur: 0 }, { blur: b.mobile ? 2 : 4, ease: 'none', duration: 0.5, onUpdate: render })
     .to(state, { blur: 0, ease: 'none', duration: 0.5, onUpdate: render });
 

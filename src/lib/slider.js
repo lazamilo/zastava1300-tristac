@@ -1,5 +1,5 @@
 import { gsap, Flip, ScrollTrigger } from './gsap.js';
-import { env } from './vars.js';
+import { env, blur } from './vars.js';
 import { loadImage } from '../config.js';
 
 /**
@@ -42,8 +42,8 @@ export function initSlider({ widget, row, plateInner, views, still = null }) {
     };
     if (!animate) return apply();
     gsap.timeline()
-      .to([title, text], { autoAlpha: 0, y: -8, filter: 'blur(4px)', duration: 0.25, ease: 'power2.in', onComplete: apply })
-      .fromTo([title, text], { autoAlpha: 0, y: 10, filter: 'blur(4px)' }, { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.8, stagger: 0.06, clearProps: 'filter' });
+      .to([title, text], { autoAlpha: 0, y: -8, ...blur(4), duration: 0.25, ease: 'power2.in', onComplete: apply })
+      .fromTo([title, text], { autoAlpha: 0, y: 10, ...blur(4) }, { autoAlpha: 1, y: 0, ...blur(0), duration: 0.8, stagger: 0.06, clearProps: 'filter' });
   };
 
   const moveIndicator = (i, animate) => {
@@ -63,12 +63,12 @@ export function initSlider({ widget, row, plateInner, views, still = null }) {
     row.classList.toggle('is-active', views[i].media !== 'cut');
     if (animate) {
       if (from && from !== to) {
-        gsap.to(from, { autoAlpha: 0, xPercent: -4 * dir, filter: 'blur(10px)', duration: 0.7, ease: 'power2.inOut', overwrite: true });
+        gsap.to(from, { autoAlpha: 0, xPercent: -4 * dir, ...blur(10), duration: 0.7, ease: 'power2.inOut', overwrite: true });
       }
       if (to) {
         gsap.fromTo(to,
-          { autoAlpha: 0, xPercent: 4 * dir, filter: 'blur(10px)' },
-          { autoAlpha: 1, xPercent: 0, filter: 'blur(0px)', duration: 1.1, delay: 0.12, overwrite: true });
+          { autoAlpha: 0, xPercent: 4 * dir, ...blur(10) },
+          { autoAlpha: 1, xPercent: 0, ...blur(0), duration: 1.1, delay: 0.12, overwrite: true });
       }
     } else {
       views.forEach((_, j) => {
