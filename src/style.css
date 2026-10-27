@@ -169,6 +169,19 @@
     transition: background-color .4s var(--ease-out);
   }
   .header.is-menu .header__bar { background: var(--white); }
+  .header__bar::before {
+    /* Frosted backing over light sections, so content scrolling underneath stays out of the way */
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: rgba(255,255,255,.72);
+    -webkit-backdrop-filter: saturate(1.6) blur(18px);
+    backdrop-filter: saturate(1.6) blur(18px);
+    opacity: 0;
+    transition: opacity .4s var(--ease-out);
+  }
+  .header.is-dark .header__bar::before { opacity: 1; }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .header__bar::before { background: rgba(255,255,255,.94); }
+  }
   .header__logo { display: inline-flex; align-items: center; gap: 10px; justify-self: start; overflow: hidden; }
   .header__mark { width: 30px; height: 15px; overflow: visible; }
   .header__mark circle { fill: none; stroke: currentColor; stroke-width: 1.6; }
