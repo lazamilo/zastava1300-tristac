@@ -129,8 +129,9 @@ async function boot() {
   build();
   hero.intro();
 
-  // The footage may arrive after the first build; rebuild once so it gets its scrubber.
-  withTimeout(video.ready, 8000).then((ok) => {
+  // The footage may arrive after the first build; rebuild once so it gets its scrubber;
+  // video.ready always settles on its own timeout.
+  video.ready.then((ok) => {
     if (ok) build();
   });
   cutReady.then(() => ScrollTrigger.update());

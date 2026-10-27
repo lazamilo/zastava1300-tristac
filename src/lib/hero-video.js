@@ -16,7 +16,9 @@ export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
   };
   if (!video) return api;
 
-  const src = (env.lite && MEDIA.videoMobile) || MEDIA.video;
+  const lite = env.lite && Boolean(MEDIA.videoMobile);
+  const src = lite ? MEDIA.videoMobile : MEDIA.video;
+  let objectUrl = null;
   if (!src || !video.canPlayType('video/mp4')) {
     plate?.classList.add('is-video-off');
     video.remove();
@@ -80,7 +82,7 @@ export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
       api.duration = video.duration || 0;
       finish(Number.isFinite(api.duration) && api.duration > 0);
     };
-    const timer = setTimeout(() => finish(video.readyState >= 2 && video.duration > 0), timeout);
+    const timer = setTimeout(() => finish(video.readyState >= 2 && video.duration > 0), lite ? timeout * 2 : timeout);
     video.addEventListener('loadeddata', onData);
     video.addEventListener('error', () => finish(false), { once: true });
     video.muted = true;
@@ -89,13 +91,26 @@ export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
     video.controls = false;
     video.crossOrigin = 'anonymous';
     video.preload = 'auto';
-    video.src = src;
-    video.load();
+    // On lite devices the small file is downloaded whole first, so scroll seeks never wait on
+    // the network; if that fails it streams like on desktop.
+    const load = (url) => {
+      video.src = url;
+      video.load();
+    };
+    if (!lite || typeof fetch !== 'function') return load(src);
+    fetch(src, { mode: 'cors' })
+      .then((res) => (res.ok ? res.blob() : Promise.reject(new Error(String(res.status)))))
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob);
+        load(objectUrl);
+      })
+      .catch(() => load(src));
   });
 
   api.destroy = () => {
     video.removeEventListener('seeked', onSeeked);
     video.removeEventListener('error', onError);
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
   };
 
   return api;

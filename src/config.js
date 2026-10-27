@@ -15,9 +15,9 @@ export const MEDIA = {
   // Scroll-scrubbed hero footage: a Higgsfield push-in shot, trimmed, reversed and re-encoded
   // (H.264 1920x1080, keyframe every 12 frames, no audio, faststart). Set to null to use the poster only.
   video: `${CDN}/5c08cd2b-ea3c-4df7-8bce-c72096e2775a.mp4`,
-  // Same footage for phones and tablets: 1280x720, every frame a keyframe so scroll seeks
-  // decode a single frame instead of a group of 12.
-  videoMobile: `${CDN}/2d51fe99-0683-4685-bb34-2ee6cd41aeb8.mp4`,
+  // Same footage for phones and tablets: 960x540 at 12 fps (every second frame, keeping the
+  // exact last frame), every frame a keyframe so scroll seeks decode a single frame. ~2.6 MB.
+  videoMobile: `${CDN}/81e25e54-4b80-4450-a39b-033c611c7eff.mp4`,
   // First frame of the hero footage.
   poster: `${CDN}/8fb7dab6-d1e3-4bf5-89c9-f3fe53a6a567.jpg`,
   // Wide front three-quarter photograph matching the end of the footage.
