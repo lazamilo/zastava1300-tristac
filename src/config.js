@@ -15,9 +15,27 @@ export const MEDIA = {
   // Scroll-scrubbed hero footage: a Higgsfield push-in shot, trimmed, reversed and re-encoded
   // (H.264 1920x1080, keyframe every 12 frames, no audio, faststart). Set to null to use the poster only.
   video: `${CDN}/5c08cd2b-ea3c-4df7-8bce-c72096e2775a.mp4`,
-  // Same footage for phones and tablets: 960x540, all 24 fps frames, a keyframe every 4 frames
-  // so a scroll seek decodes at most 4 small frames. ~3.2 MB, downloaded whole before scrubbing.
+  // Fallback for phones and tablets if the image sequence below fails: 960x540, 24 fps,
+  // a keyframe every 4 frames. ~3.2 MB, downloaded whole before scrubbing.
   videoMobile: `${CDN}/bf725118-fe4b-451f-a098-48f4ce3b478a.mp4`,
+  // Phones and tablets scrub this image sequence on a canvas instead of the video: every second
+  // frame of the footage (75 frames, exact last frame kept), 960x540, packed 3x5 per WebP sheet.
+  // Neighbouring frames are blended while scrolling. ~3.8 MB.
+  frames: {
+    sheets: [
+      `${CDN}/d9f7dce2-ac63-432b-9d36-c7600d688cfd.webp`,
+      `${CDN}/fa33070f-ce0b-4d41-9f8f-e30ac29cb4b9.webp`,
+      `${CDN}/3054bb72-381a-4898-b41f-f7ca8eb8cd13.webp`,
+      `${CDN}/48e2c6cd-85c1-41ca-aabc-cebfa3c6b008.webp`,
+      `${CDN}/0a71db88-8a44-48a1-8091-92b53e854eed.webp`
+    ],
+    cols: 3,
+    rows: 5,
+    count: 75,
+    width: 960,
+    height: 540,
+    fps: 12
+  },
   // First frame of the hero footage.
   poster: `${CDN}/8fb7dab6-d1e3-4bf5-89c9-f3fe53a6a567.jpg`,
   // Wide front three-quarter photograph matching the end of the footage.

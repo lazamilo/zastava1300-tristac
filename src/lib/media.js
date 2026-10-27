@@ -57,7 +57,8 @@ function computeGeometry(b) {
     cat: { x: glide.x - slot.x, y: glide.y - slot.y + trackDist * catS, s: catS },
     glideLocal: { x: glide.x - slot.x, y: glide.y - slot.y },
     pres: { s: presS, x: present.x - slot.x, y: present.y - slot.y },
-    clip
+    clip,
+    lite: Boolean(b.lite)
   };
 }
 
@@ -88,6 +89,10 @@ export function render() {
   setVar(el, '--pres-y', px(ty));
   setVar(el, '--pres-s', ps);
 
+  setVar(el, '--cut', state.cut);
+  // Lite devices use a fixed radius and no clip-path (see style.css), so nothing else to write.
+  if (geo.lite) return;
+
   // Visual radius grows from 0 (full-bleed) to the plate radius; compensate the total scale.
   const total = hs * cs * ps;
   const radius = (dom.radius ?? 16) * (1 - state.hero) * (1 - state.cut);
@@ -96,8 +101,6 @@ export function render() {
   setVar(el, '--clip-r', px(clip.r * state.hero));
   setVar(el, '--clip-b', px(clip.b * state.hero));
   setVar(el, '--clip-l', px(clip.l * state.hero));
-
-  setVar(el, '--cut', state.cut);
   setVar(el, '--plate-blur', px(state.blur));
 }
 

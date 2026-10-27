@@ -2,9 +2,12 @@ import { MEDIA } from '../config.js';
 import { env } from './vars.js';
 
 /**
- * Scroll-scrubbed hero footage with coalesced seeks: while one seek is in flight, only the
- * latest requested time is kept and applied once the browser reports `seeked`.
- * The video never autoplays, loops or shows controls.
+ * Scroll-scrubbed hero footage. Every source exposes the same api:
+ * { ok, duration, ready, seek(progress 0..1), destroy }. Nothing autoplays, loops or shows controls.
+ *
+ * Desktop: the video element with coalesced seeks.
+ * Lite devices (phones, tablets): a pre-decoded image sequence drawn on a canvas, because
+ * mobile browsers deliver video seeks late. Falls back to the light mobile video if it fails.
  */
 export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
   const api = {
@@ -16,13 +19,87 @@ export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
   };
   if (!video) return api;
 
-  const lite = env.lite && Boolean(MEDIA.videoMobile);
-  const src = lite ? MEDIA.videoMobile : MEDIA.video;
+  const canFrames = typeof createImageBitmap === 'function' && typeof fetch === 'function';
+  if (env.lite && MEDIA.frames && canFrames) {
+    api.ready = initFrames(api, video, plate, timeout).then((ok) => ok || initVideo(api, video, plate, timeout, true));
+    return api;
+  }
+  api.ready = initVideo(api, video, plate, timeout, env.lite);
+  return api;
+}
+
+// Loads the sprite sheets, decodes them off the main thread and swaps the video for a canvas.
+function initFrames(api, video, plate, timeout) {
+  const { sheets, cols, rows, count, width, height, fps } = MEDIA.frames;
+  const perSheet = cols * rows;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'plate__frames';
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d', { alpha: false });
+  let bitmaps = [];
+  let last = -1;
+
+  const drawFrame = (i, alpha) => {
+    const sheet = bitmaps[Math.floor(i / perSheet)];
+    const local = i % perSheet;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(sheet, (local % cols) * width, Math.floor(local / cols) * height, width, height, 0, 0, width, height);
+  };
+
+  // Draws the frame for a 0..1 progress, blending into the next frame so motion stays continuous.
+  const seek = (progress) => {
+    const f = Math.min(1, Math.max(0, progress)) * (count - 1);
+    if (Math.abs(f - last) < 0.01) return;
+    last = f;
+    const i = Math.floor(f);
+    const blend = f - i;
+    drawFrame(i, 1);
+    if (blend > 0.02 && i + 1 < count) drawFrame(i + 1, blend);
+  };
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (ok) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => finish(false), timeout * 2);
+
+    Promise.all(sheets.map((url) =>
+      fetch(url, { mode: 'cors' })
+        .then((res) => (res.ok ? res.blob() : Promise.reject(new Error(String(res.status)))))
+        .then((blob) => createImageBitmap(blob))))
+      .then((decoded) => {
+        if (settled) return decoded.forEach((b) => b.close?.());
+        bitmaps = decoded;
+        video.replaceWith(canvas);
+        api.ok = true;
+        api.duration = count / (fps || 24);
+        api.seek = seek;
+        api.destroy = () => {
+          bitmaps.forEach((b) => b.close?.());
+          bitmaps = [];
+        };
+        seek(0);
+        plate?.classList.add('is-video-ready');
+        finish(true);
+      })
+      .catch(() => finish(false));
+  });
+}
+
+// Video element with coalesced seeks: while one seek is in flight, only the latest requested
+// time is kept and applied once the browser reports `seeked`.
+function initVideo(api, video, plate, timeout, lite) {
+  const src = (lite && MEDIA.videoMobile) || MEDIA.video;
   let objectUrl = null;
-  if (!src || !video.canPlayType('video/mp4')) {
+  if (!src || !video.isConnected || !video.canPlayType('video/mp4')) {
     plate?.classList.add('is-video-off');
     video.remove();
-    return api;
+    return Promise.resolve(false);
   }
 
   let seeking = false;
@@ -67,7 +144,13 @@ export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
     if (!seeking) apply();
   };
 
-  api.ready = new Promise((resolve) => {
+  api.destroy = () => {
+    video.removeEventListener('seeked', onSeeked);
+    video.removeEventListener('error', onError);
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+  };
+
+  return new Promise((resolve) => {
     let settled = false;
     const finish = (ok) => {
       if (settled) return;
@@ -106,12 +189,4 @@ export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
       })
       .catch(() => load(src));
   });
-
-  api.destroy = () => {
-    video.removeEventListener('seeked', onSeeked);
-    video.removeEventListener('error', onError);
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
-  };
-
-  return api;
 }
