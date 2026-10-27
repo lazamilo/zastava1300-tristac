@@ -18,23 +18,40 @@ export const MEDIA = {
   // Fallback for phones and tablets if the image sequence below fails: 960x540, 24 fps,
   // a keyframe every 4 frames. ~3.2 MB, downloaded whole before scrubbing.
   videoMobile: `${CDN}/bf725118-fe4b-451f-a098-48f4ce3b478a.mp4`,
-  // Phones and tablets scrub this image sequence on a canvas instead of the video: every second
-  // frame of the footage (75 frames, exact last frame kept), 960x540, packed 3x5 per WebP sheet.
-  // Neighbouring frames are blended while scrolling. ~3.8 MB.
+  // Phones and tablets scrub an image sequence on a canvas instead of the video: every second
+  // frame of the footage (75 frames, exact last frame kept), packed 3x5 per WebP sheet.
+  // Neighbouring frames are blended while scrolling. The device tier picks the set (see vars.js).
   frames: {
-    sheets: [
-      `${CDN}/d9f7dce2-ac63-432b-9d36-c7600d688cfd.webp`,
-      `${CDN}/fa33070f-ce0b-4d41-9f8f-e30ac29cb4b9.webp`,
-      `${CDN}/3054bb72-381a-4898-b41f-f7ca8eb8cd13.webp`,
-      `${CDN}/48e2c6cd-85c1-41ca-aabc-cebfa3c6b008.webp`,
-      `${CDN}/0a71db88-8a44-48a1-8091-92b53e854eed.webp`
-    ],
     cols: 3,
     rows: 5,
     count: 75,
-    width: 960,
-    height: 540,
-    fps: 12
+    fps: 12,
+    // Most phones: 960x540, ~3.8 MB.
+    full: {
+      width: 960,
+      height: 540,
+      sheets: [
+        `${CDN}/d9f7dce2-ac63-432b-9d36-c7600d688cfd.webp`,
+        `${CDN}/fa33070f-ce0b-4d41-9f8f-e30ac29cb4b9.webp`,
+        `${CDN}/3054bb72-381a-4898-b41f-f7ca8eb8cd13.webp`,
+        `${CDN}/48e2c6cd-85c1-41ca-aabc-cebfa3c6b008.webp`,
+        `${CDN}/0a71db88-8a44-48a1-8091-92b53e854eed.webp`
+      ]
+    },
+    // Budget phones: 640x360, ~1.9 MB and less than half the memory.
+    low: {
+      width: 640,
+      height: 360,
+      sheets: [
+        `${CDN}/ae698743-5c1e-4219-8153-9567c1b43609.webp`,
+        `${CDN}/1ce62eeb-5ea2-4f73-8e1a-24ac75028fbb.webp`,
+        `${CDN}/4db8b09d-0382-4164-8742-2ff290ba0efc.webp`,
+        `${CDN}/b444d1d9-a5f7-40d4-9ae6-e20c3afc85ba.webp`,
+        `${CDN}/841ec6a9-2880-4451-bf22-58aa308f0318.webp`
+      ]
+    },
+    // Very low memory or data saver: no sequence, the poster fades into this exact last frame.
+    last: `${CDN}/ca0d62e6-1129-40ad-9b71-4bae5b377876.jpg`
   },
   // First frame of the hero footage.
   poster: `${CDN}/8fb7dab6-d1e3-4bf5-89c9-f3fe53a6a567.jpg`,

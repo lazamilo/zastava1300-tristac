@@ -16,6 +16,20 @@ export const env = {
   // Phones and tablets: skip effects that repaint large layers on every scroll frame.
   get lite() {
     return this.mobile || this.touch;
+  },
+  // How much hero media a lite device gets: 'full', 'low' (smaller frames) or 'still' (one image).
+  // Memory and connection hints come from Chrome; Safari reports none and gets 'full'.
+  // `?tier=low` (or full / still) in the URL forces a tier for testing.
+  get tier() {
+    const forced = new URLSearchParams(window.location.search).get('tier');
+    if (['full', 'low', 'still'].includes(forced)) return forced;
+    const memory = navigator.deviceMemory;
+    const cores = navigator.hardwareConcurrency;
+    const connection = navigator.connection;
+    const type = connection?.effectiveType || '';
+    if (connection?.saveData || type.endsWith('2g') || (memory && memory <= 2)) return 'still';
+    if ((memory && memory <= 4) || (cores && cores <= 4) || type === '3g') return 'low';
+    return 'full';
   }
 };
 

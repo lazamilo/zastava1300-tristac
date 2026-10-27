@@ -7,7 +7,9 @@ import { env } from './vars.js';
  *
  * Desktop: the video element with coalesced seeks.
  * Lite devices (phones, tablets): a pre-decoded image sequence drawn on a canvas, because
- * mobile browsers deliver video seeks late. Falls back to the light mobile video if it fails.
+ * mobile browsers deliver video seeks late. Budget phones get a smaller sequence, and very low
+ * memory or data saver gets a single still. If the sequence fails it falls back to the light
+ * mobile video; if the still fails the poster stays.
  */
 export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
   const api = {
@@ -20,17 +22,52 @@ export function initHeroVideo(video, plate, { timeout = 7000 } = {}) {
   if (!video) return api;
 
   const canFrames = typeof createImageBitmap === 'function' && typeof fetch === 'function';
-  if (env.lite && MEDIA.frames && canFrames) {
-    api.ready = initFrames(api, video, plate, timeout).then((ok) => ok || initVideo(api, video, plate, timeout, true));
+  if (env.lite && MEDIA.frames) {
+    const tier = env.tier;
+    if (tier === 'still' || !canFrames) {
+      api.ready = initStill(api, video, plate);
+      return api;
+    }
+    const set = MEDIA.frames[tier] || MEDIA.frames.full;
+    api.ready = initFrames(api, video, plate, timeout, set).then((ok) => ok || initVideo(api, video, plate, timeout, true));
     return api;
   }
   api.ready = initVideo(api, video, plate, timeout, env.lite);
   return api;
 }
 
+// Lightest tier: the poster cross-fades into the footage's exact last frame while scrolling, so
+// the hand-off to the transparent cut-out still lines up.
+function initStill(api, video, plate) {
+  const img = new Image();
+  img.className = 'plate__still';
+  img.alt = '';
+  img.decoding = 'async';
+  return new Promise((resolve) => {
+    img.onload = () => {
+      video.replaceWith(img);
+      api.ok = true;
+      api.duration = 1;
+      api.seek = (progress) => {
+        const t = Math.min(1, Math.max(0, (progress - 0.35) / 0.6));
+        img.style.setProperty('--seq', String(Math.round(t * t * (3 - 2 * t) * 1000) / 1000));
+      };
+      api.seek(0);
+      resolve(true);
+    };
+    img.onerror = () => {
+      plate?.classList.add('is-video-off');
+      video.remove();
+      resolve(false);
+    };
+    img.src = MEDIA.frames.last;
+  });
+}
+
 // Loads the sprite sheets, decodes them off the main thread and swaps the video for a canvas.
-function initFrames(api, video, plate, timeout) {
-  const { sheets, cols, rows, count, width, height, fps } = MEDIA.frames;
+function initFrames(api, video, plate, timeout, set) {
+  const { cols, rows, count, fps } = MEDIA.frames;
+  const { sheets, width, height } = set;
   const perSheet = cols * rows;
   const canvas = document.createElement('canvas');
   canvas.className = 'plate__frames';

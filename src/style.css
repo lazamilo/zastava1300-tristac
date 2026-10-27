@@ -531,7 +531,7 @@
     background: #2a241e;
     opacity: calc(1 - var(--cut));
   }
-  .plate__poster, .plate__video, .plate__frames, .plate__cut {
+  .plate__poster, .plate__video, .plate__frames, .plate__still, .plate__cut {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover;
   }
@@ -540,6 +540,7 @@
   .plate.is-video-ready .plate__video,
   .plate.is-video-ready .plate__frames { opacity: calc(1 - var(--cut)); transition: none; }
   .plate.is-video-off .plate__video { display: none; }
+  .plate__still { opacity: calc(var(--seq, 0) * (1 - var(--cut))); }
   .plate__cut { object-fit: contain; opacity: var(--cut); }
   .plate__cut.is-fallback { object-fit: cover; border-radius: var(--radius-plate); }
 
